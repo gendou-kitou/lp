@@ -22,7 +22,7 @@
   ・LINEの鑑定書に、期限の日付を付けたURLを入れます（鑑定書プロンプトと同じ）。
       例）11/20に鑑定書を送る → https://gendou-kitou.github.io/lp/kantei/?d=2026-11-21
   ・?f=2026-11-20（送った日）でも同じ期限になります。
-  ・日付を付け忘れたときは、このページを初めて開いた日の翌日23:59になります（ブラウザに記録）。
+  ・日付がないURL（LINEの追いメッセージなど）では、残り時間は出さず「鑑定書をお送りした翌日の23:59まで」と表示します。
   ・期限を過ぎると申込ボタンが消え、「LINEへ」だけになります。
 
   ■ 注意
@@ -253,6 +253,7 @@ footer .copy{font-family:"Cormorant Garamond",serif;font-size:13px;color:var(--d
       <p class="was">通常 <s>10,000円</s> →</p>
       <p class="now">4,980<small>円（税込）</small></p>
       <p class="p d-only">期限：<b id="dl-date">--</b> 23:59まで</p>
+      <p class="p no-d">期限：無料開運霊視鑑定書をお送りした<b>翌日の23:59</b>まで</p>
       <div class="cd d-only" aria-live="off">
         <div class="u"><span class="n" id="cd-d">-</span><span class="l">日</span></div><span class="c">:</span>
         <div class="u"><span class="n" id="cd-h">--</span><span class="l">時間</span></div><span class="c">:</span>
@@ -388,6 +389,7 @@ footer .copy{font-family:"Cormorant Garamond",serif;font-size:13px;color:var(--d
         <p class="was open-only">通常 <s>10,000円</s><b>5,020円OFF</b></p>
         <div class="price">4,980<small>円（税込）</small></div>
         <p class="lim open-only d-only">期限：<span class="js-dl">--</span> 23:59まで・先着3名様</p>
+        <p class="lim open-only no-d">鑑定書をお送りした翌日の23:59まで・先着3名様</p>
         <p class="what">なぜ、いまこの苦しさが続いているのか。その根っこから、これから整っていく方向まで深く視ていきます。視えたことをもとに、<em>あなたのお名前と願いを、私が弁天様の御宝前でお唱えし、祈祷いたします。</em></p>
         <ul>
           <li>いまの苦しさが、なぜくり返されているのか（根っこ）</li>
@@ -529,21 +531,17 @@ var CONFIG = {
 
   /* 期限：?d=期限日 → その日の23:59:59（日本時間）
            ?f=無料鑑定書を送った日 → 翌日の23:59:59
-           どちらもない → 初めて開いた日の翌日23:59:59 */
-  var DAYS = 1, JST = 9*3600*1000, KEY = "gendou_kantei_first_1plan";
+           どちらもない → 残り時間は出さず「鑑定書をお送りした翌日の23:59まで」と表示 */
+  var DAYS = 1, JST = 9*3600*1000, KEY = "";
   var re = /(\d{4})-?(\d{2})-?(\d{2})/;
   var qd = location.search.match(/[?&]d=([\d-]+)/), qf = location.search.match(/[?&]f=([\d-]+)/);
   var m = qd && qd[1].match(re), mf = qf && qf[1].match(re), y, mo, da;
   if (m) { y = +m[1]; mo = +m[2]-1; da = +m[3]; }
   else if (mf) { y = +mf[1]; mo = +mf[2]-1; da = +mf[3] + DAYS; }
-  else {
-    var first = Date.now();
-    try { var sv = parseInt(localStorage.getItem(KEY), 10); if (sv > 0 && sv <= Date.now()) first = sv; else localStorage.setItem(KEY, String(first)); } catch(e) {}
-    var j = new Date(first + JST); y = j.getUTCFullYear(); mo = j.getUTCMonth(); da = j.getUTCDate() + DAYS;
-  }
+  else { y = null; }
+  if (y !== null) {
   var endDay = new Date(Date.UTC(y, mo, da));
   var end = Date.UTC(endDay.getUTCFullYear(), endDay.getUTCMonth(), endDay.getUTCDate(), 23, 59, 59) - JST;
-  if (true) {
     b.classList.add("has-d");
     var wk = "日月火水木金土".charAt(endDay.getUTCDay());
     var dls = (endDay.getUTCMonth()+1) + "月" + endDay.getUTCDate() + "日（" + wk + "）";
